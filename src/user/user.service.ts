@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
 import { Model } from 'mongoose';
@@ -8,12 +8,39 @@ import { RegisterUserDto } from 'src/auth/dto/register.user.dto';
 export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
   async createUser(registerUserDto: RegisterUserDto) {
-    return await this.userModel.create({
-      firstName: registerUserDto.firstName,
-      lastName: registerUserDto.lastName,
-      email: registerUserDto.email,
-      password: registerUserDto.password,
-      role: registerUserDto.role,
-    });
+    try {
+      return await this.userModel.create({
+        firstName: registerUserDto.firstName,
+        lastName: registerUserDto.lastName,
+        email: registerUserDto.email,
+        password: registerUserDto.password,
+        role: registerUserDto.role,
+      });
+    } catch (err: unknown) {
+      const e = err as {
+        code?: number;
+        keyPattern?: { email: string };
+        keyValue?: { email: string };
+      };
+
+      const DUPLICATE_CODE_KEY = 11000;
+      if (e.code == DUPLICATE_CODE_KEY) {
+        throw new ConflictException(
+          `This email ${e?.keyValue?.email || ''} is already taken.`,
+        );
+      }
+
+      throw err;
+    }
+  }
+
+  async findByEmailAndRole(email: string, role: string) {
+    console.log('Email', email, 'Role', role);
+
+    const user = this.userModel.findOne({ email, role });
+
+    console.log(`User ....`, user);
+
+    return user;
   }
 }

@@ -1,7 +1,8 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Book } from './schemas/book.schema';
 import { Model } from 'mongoose';
-import { Injectable } from '@nestjs/common';
+import { Book } from './schemas/book.schema';
+import InsertBookDto, { PushImagesUpdate } from './dto/insert.book.dto';
 
 @Injectable()
 export class BooksService {
@@ -9,46 +10,117 @@ export class BooksService {
 
   async getBooks() {
     try {
-      await this.bookModel.find({});
-      return `Fetch book successfully`;
+      const books = await this.bookModel.find({});
+      return {
+        success: true,
+        statusCode: 200,
+        message: 'Books fetched successfully',
+        data: books,
+      };
     } catch (error) {
-      console.error(`Error`, error);
+      console.error('Error fetching books:', error);
+      throw error;
     }
   }
 
-  async get() {
+  async get(id: string) {
     try {
-      await this.bookModel.find({});
-      return `Fetch book successfully`;
+      const book = await this.bookModel.findById(id);
+      if (!book) throw new NotFoundException('Book not found');
+      return {
+        success: true,
+        statusCode: 200,
+        message: 'Book fetched successfully',
+        data: book,
+      };
     } catch (error) {
-      console.error(`Error`, error);
+      console.error('Error fetching book:', error);
+      throw error;
     }
   }
 
-  async create() {
+  async create(insertBookDto: InsertBookDto) {
     try {
-      await this.bookModel.find({});
-      return `Insert book successfully`;
+      const newBook = await this.bookModel.create(insertBookDto);
+      return {
+        success: true,
+        statusCode: 201,
+        message: 'Book created successfully',
+        data: newBook,
+      };
     } catch (error) {
-      console.error(`Error`, error);
+      console.error('Error creating book:', error);
+      throw error;
     }
   }
 
-  async delete() {
+  async delete(id: string) {
     try {
-      await this.bookModel.find({});
-      return `Delete book successfully`;
+      const deletedBook = await this.bookModel.findByIdAndDelete(id);
+      if (!deletedBook) throw new NotFoundException('Book not found');
+      return {
+        success: true,
+        statusCode: 200,
+        message: 'Book deleted successfully',
+        data: deletedBook,
+      };
     } catch (error) {
-      console.error(`Error`, error);
+      console.error('Error deleting book:', error);
+      throw error;
     }
   }
 
-  async update() {
+  async update(id: string, updateData: Partial<InsertBookDto>) {
     try {
-      await this.bookModel.find({});
-      return `Update book successfully`;
+      console.log(id, updateData);
+
+      const updatedBook = await this.bookModel.findByIdAndUpdate(
+        id,
+        updateData,
+        {
+          new: true,
+        },
+      );
+
+      console.log('updateData ..', updateData);
+
+      if (!updatedBook) throw new NotFoundException('Book not found');
+      return {
+        success: true,
+        statusCode: 200,
+        message: 'Book updated successfully',
+        data: updatedBook,
+      };
     } catch (error) {
-      console.error(`Error`, error);
+      console.error('Error updating book:', error);
+      throw error;
+    }
+  }
+
+  async updateImages(id: string, updateData: PushImagesUpdate) {
+    try {
+      console.log(id, updateData);
+
+      const updatedBook = await this.bookModel.findByIdAndUpdate(
+        id,
+        updateData,
+        {
+          new: true,
+        },
+      );
+
+      console.log('updateData ..', updateData);
+
+      if (!updatedBook) throw new NotFoundException('Book not found');
+      return {
+        success: true,
+        statusCode: 200,
+        message: 'Book updated successfully',
+        data: updatedBook,
+      };
+    } catch (error) {
+      console.error('Error updating book:', error);
+      throw error;
     }
   }
 }
