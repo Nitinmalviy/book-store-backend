@@ -35,12 +35,7 @@ export class UserService {
   }
 
   async findByEmailAndRole(email: string, role: string) {
-    console.log('Email', email, 'Role', role);
-
     const user = this.userModel.findOne({ email, role });
-
-    console.log(`User ....`, user);
-
     return user;
   }
 }

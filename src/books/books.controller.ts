@@ -42,7 +42,8 @@ export class BooksController {
     @UploadedFile() file: Express.Multer.File,
     @Body() insertBookDto: InsertBookDto,
   ) {
-    const filePath = file ? file.path : '';
+    let filePath = file ? file.path : '';
+    filePath = `http://localhost:3000/${filePath}`;
     return this.booksService.create({ ...insertBookDto, thumbnail: filePath });
   }
 
@@ -60,7 +61,8 @@ export class BooksController {
     @UploadedFile() file: Express.Multer.File,
     @Body() updateBookDto: Partial<InsertBookDto>,
   ) {
-    const filePath = file ? file.path : undefined;
+    let filePath = file ? file.path : undefined;
+    filePath = `http://localhost:3000/${filePath}`;
     console.log('Body:', updateBookDto, 'File:', filePath);
     return this.booksService.update(id, {
       ...updateBookDto,
@@ -85,7 +87,7 @@ export class BooksController {
       };
     }
 
-    const filePaths = files.map((file) => file.path);
+    const filePaths = files.map((file) => `http://localhost:3000/${file.path}`);
 
     const updatedBook = await this.booksService.updateImages(id, {
       $push: { images: { $each: filePaths } },
